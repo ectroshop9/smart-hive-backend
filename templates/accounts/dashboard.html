@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - Smart Hive</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { background: #343a40; color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { margin: 0; }
+        .logout { background: #dc3545; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; border: none; cursor: pointer; }
+        .card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card h3 { margin-top: 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: right; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; }
+        .online { color: #28a745; }
+        .offline { color: #dc3545; }
+        .btn { background: #007bff; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐝 مرحباً، {{ beekeeper.name }}</h1>
+            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout">تسجيل الخروج</button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h3>📊 معلومات الحساب</h3>
+            <p><strong>معرف النحال:</strong> {{ beekeeper.user_id }}</p>
+            <p><strong>البريد:</strong> {{ beekeeper.email }}</p>
+            <p><strong>الهاتف:</strong> {{ beekeeper.phone }}</p>
+            <p><strong>العنوان:</strong> {{ beekeeper.address|default:"غير محدد" }}</p>
+            <a href="#" class="btn">✏️ تعديل المعلومات</a>
+        </div>
+        
+        <div class="card">
+            <h3>📱 أجهزتي ({{ devices.count }})</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>المعرف</th>
+                        <th>الاسم</th>
+                        <th>النوع</th>
+                        <th>الإصدار</th>
+                        <th>الحالة</th>
+                        <th>آخر اتصال</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in devices %}
+                    <tr>
+                        <td>{{ device.device_id }}</td>
+                        <td>{{ device.name }}</td>
+                        <td>{% if device.device_type == 'MASTER' %}ماستر{% else %}سلايف{% endif %}</td>
+                        <td>{{ device.firmware_version }}</td>
+                        <td class="{% if device.is_online %}online{% else %}offline{% endif %}">
+                            {% if device.is_online %}🟢 متصل{% else %}🔴 غير متصل{% endif %}
+                        </td>
+                        <td>{{ device.last_seen|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6">لا توجد أجهزة مسجلة بعد.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h3>🛒 المتجر</h3>
+            <p>قريباً - يمكنك شراء قطع الغيار والإكسسوارات من هنا</p>
+        </div>
+    </div>
+</body>
+</html>
