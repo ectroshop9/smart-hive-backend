@@ -157,3 +157,4 @@ import os
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-key')
+STATIC_ROOT = '/opt/render/project/src/static'
