@@ -9,8 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ==================== إعدادات الأمان ====================
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-f4nx$nm#%vz7*ny27hc4qo-cwv-tn3#+wt$060$803!9a!v-=a')
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'smart-hive-backend.onrender.com,localhost,127.0.0.1').split(',')
+DEBUG = False
+ALLOWED_HOSTS = ['smart-hive-backend.onrender.com', 'localhost', '127.0.0.1', '.onrender.com']
 
 # ==================== تعريف التطبيقات ====================
 INSTALLED_APPS = [
@@ -31,6 +31,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # مهم لـ Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -82,7 +83,8 @@ USE_TZ = True
 
 # ==================== الملفات الثابتة والميديا ====================
 STATIC_URL = '/static/'
-STATIC_ROOT = '/opt/render/project/src/static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -101,8 +103,8 @@ LOGOUT_REDIRECT_URL = '/login/'
 
 # ==================== إعدادات CSRF ====================
 CSRF_TRUSTED_ORIGINS = [
+    'https://smart-hive-backend.onrender.com',
     'https://*.onrender.com',
-    'https://*.cloudshell.dev',
 ]
 
 # ==================== مفتاح أساسي افتراضي ====================
