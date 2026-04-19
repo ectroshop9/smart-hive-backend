@@ -5,3 +5,4 @@ djangorestframework-csv==3.0.2
 sqlparse==0.5.5
 gunicorn
 whitenoise
+django-cors-headers
