@@ -109,3 +109,14 @@ CSRF_TRUSTED_ORIGINS = [
 
 # ==================== مفتاح أساسي افتراضي ====================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# ==================== CORS Settings ====================
+INSTALLED_APPS += ['corsheaders']
+MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
+
+CORS_ALLOWED_ORIGINS = [
+    'https://smart-hive-frontend.vercel.app',
+    'https://3000-cs-*.cloudshell.dev',
+    'https://*.cloudshell.dev',
+    'http://localhost:3000',
+]
+CORS_ALLOW_CREDENTIALS = True
