@@ -9,6 +9,8 @@ urlpatterns = [
     path('api/devices/', include('devices.urls')),
     path('api/firmware/', include('firmware.urls')),
     path('', include('accounts.urls')),  # هذا يضم كل مسارات accounts
+    path('api/store/', include('store.urls')),
+
 ]
 
 if settings.DEBUG:
