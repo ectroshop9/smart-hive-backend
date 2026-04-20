@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ==================== إعدادات الأمان ====================
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-f4nx$nm#%vz7*ny27hc4qo-cwv-tn3#+wt$060$803!9a!v-=a')
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ['smart-hive-backend.onrender.com', 'localhost', '127.0.0.1', '.onrender.com']
 
 # ==================== تعريف التطبيقات ====================
