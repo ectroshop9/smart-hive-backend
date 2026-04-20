@@ -4,6 +4,7 @@ Django settings for smart_hive_cloud project.
 
 from pathlib import Path
 import os
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,7 +32,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # مهم لـ Render
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -60,12 +61,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'smart_hive_cloud.wsgi.application'
 
 # ==================== قاعدة البيانات ====================
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# استخدام PostgreSQL إذا كان DATABASE_URL موجوداً، وإلا SQLite
+if os.environ.get('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # ==================== التحقق من كلمة المرور ====================
 AUTH_PASSWORD_VALIDATORS = [
@@ -109,15 +116,10 @@ CSRF_TRUSTED_ORIGINS = [
 
 # ==================== مفتاح أساسي افتراضي ====================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # ==================== CORS Settings ====================
 INSTALLED_APPS += ['corsheaders']
 MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
 
-CORS_ALLOWED_ORIGINS = [
-    'https://smart-hive-frontend.vercel.app',
-    'https://3000-cs-*.cloudshell.dev',
-    'https://*.cloudshell.dev',
-    'http://localhost:3000',
-]
-CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
