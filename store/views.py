@@ -57,7 +57,7 @@ class CreateOrderAPIView(APIView):
             beekeeper.save()
         
         # إنشاء الطلب
-        order_id = f"ORD-{timezone.now().strftime('%Y%m%d')}-{beekeeper.user_id}"
+        order_id = f"ORD{timezone.now().strftime('%y%m%d%H%M%S')}"
         total = 0
         
         order = Order.objects.create(
