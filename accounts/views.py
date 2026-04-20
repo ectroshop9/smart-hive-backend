@@ -12,6 +12,11 @@ from .forms import ActivationForm
 from .models import SerialKey
 from users.models import Beekeeper
 from devices.models import Device
+# ==================== إنشاء المسؤول تلقائياً ====================
+from django.contrib.auth.models import User
+if not User.objects.filter(username='admin').exists():
+    User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+    print("✅ Admin user created: admin / admin123")
 
 # ==================== Django Views (للصفحات) ====================
 
