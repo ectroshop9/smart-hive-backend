@@ -4,7 +4,6 @@ from rest_framework import status
 from django.utils import timezone
 from .models import Product, Order, OrderItem
 from users.models import Beekeeper
-from .serializers import ProductSerializer, OrderSerializer
 
 class ProductListAPIView(APIView):
     def get(self, request):
@@ -35,17 +34,27 @@ class ProductDetailAPIView(APIView):
 
 class CreateOrderAPIView(APIView):
     def post(self, request):
-        user_id = request.data.get('user_id')
+        user_id = request.data.get('user_id', 'BEEK-GUEST')
+        full_name = request.data.get('full_name', 'زائر')
+        phone = request.data.get('phone', '0000000000')
         items = request.data.get('items', [])
         shipping_address = request.data.get('shipping_address', '')
         
-        print(f"DEBUG: user_id={user_id}, items={items}")  # للتشخيص
+        # إنشاء أو جلب المستخدم (زائر أو مسجل)
+        beekeeper, created = Beekeeper.objects.get_or_create(
+            user_id=user_id,
+            defaults={
+                'name': full_name,
+                'phone': phone,
+                'email': f"{user_id}@guest.com"
+            }
+        )
         
-        try:
-            beekeeper = Beekeeper.objects.get(user_id=user_id)
-        except Beekeeper.DoesNotExist:
-            print(f"DEBUG: Beekeeper with user_id={user_id} not found")
-            return Response({'error': 'المستخدم غير موجود'}, status=404)
+        # إذا كان المستخدم موجوداً مسبقاً وزائر، نحدث بياناته
+        if not created and user_id == 'BEEK-GUEST':
+            beekeeper.name = full_name
+            beekeeper.phone = phone
+            beekeeper.save()
         
         # إنشاء الطلب
         order_id = f"ORD-{timezone.now().strftime('%Y%m%d')}-{beekeeper.user_id}"
@@ -80,7 +89,6 @@ class CreateOrderAPIView(APIView):
                 product.stock_quantity -= quantity
                 product.save()
             except Product.DoesNotExist:
-                print(f"DEBUG: Product {item['product_id']} not found")
                 continue
         
         order.total_amount = total
