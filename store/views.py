@@ -39,9 +39,12 @@ class CreateOrderAPIView(APIView):
         items = request.data.get('items', [])
         shipping_address = request.data.get('shipping_address', '')
         
+        print(f"DEBUG: user_id={user_id}, items={items}")  # للتشخيص
+        
         try:
             beekeeper = Beekeeper.objects.get(user_id=user_id)
         except Beekeeper.DoesNotExist:
+            print(f"DEBUG: Beekeeper with user_id={user_id} not found")
             return Response({'error': 'المستخدم غير موجود'}, status=404)
         
         # إنشاء الطلب
@@ -77,6 +80,7 @@ class CreateOrderAPIView(APIView):
                 product.stock_quantity -= quantity
                 product.save()
             except Product.DoesNotExist:
+                print(f"DEBUG: Product {item['product_id']} not found")
                 continue
         
         order.total_amount = total
