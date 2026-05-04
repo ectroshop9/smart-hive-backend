@@ -3,7 +3,7 @@ services:
     name: smart-hive-backend
     runtime: python
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py makemigrations vault && python manage.py migrate
-    startCommand: gunicorn smart_hive_cloud.wsgi:application
+    startCommand: python manage.py migrate && gunicorn smart_hive_cloud.wsgi:application
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: smart_hive_cloud.settings
