@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/firmware/', include('firmware.urls')),
     path('', include('accounts.urls')),  # هذا يضم كل مسارات accounts
     path('api/store/', include('store.urls')),
+    path('vault/', include('vault.urls')),
 
 ]
 
