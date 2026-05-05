@@ -139,11 +139,19 @@ class LoginAPIView(APIView):
         
         user = authenticate(username=user.username, password=password)
         if user is not None:
+            # جلب user_id من Beekeeper
+            try:
+                beekeeper = Beekeeper.objects.get(email=user.email)
+                user_id = beekeeper.user_id
+            except Beekeeper.DoesNotExist:
+                user_id = f"BEEK-{user.id:04d}"
+            
             return Response({
                 'success': True,
                 'token': 'dummy-token',
                 'name': user.first_name,
-                'email': user.email
+                'email': user.email,
+                'user_id': user_id
             })
         else:
             return Response({'error': 'كلمة المرور غير صحيحة'}, status=status.HTTP_401_UNAUTHORIZED)
