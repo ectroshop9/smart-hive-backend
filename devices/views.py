@@ -17,32 +17,37 @@ class RegisterDeviceAPIView(APIView):
             try:
                 beekeeper = Beekeeper.objects.get(user_id=user_id, is_active=True)
             except Beekeeper.DoesNotExist:
-                return Response({'error': 'Invalid user_id'}, 
+                return Response({'error': 'رقم النحّال غير صحيح'}, 
                               status=status.HTTP_400_BAD_REQUEST)
         
         serializer = DeviceSerializer(data=data)
         if serializer.is_valid():
-            serializer.save(last_seen=timezone.now())
-            return Response({'status': 'registered', 'device_id': serializer.data['device_id']}, 
-                          status=status.HTTP_201_CREATED)
+            device = serializer.save(last_seen=timezone.now())
+            return Response({
+                'status': 'registered',
+                'id': device.id,
+                'name': device.name,
+                'mac_address': device.mac_address,
+                'device_type': device.device_type,
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CheckinAPIView(APIView):
     def post(self, request):
-        device_id = request.data.get('device_id')
-        if not device_id:
-            return Response({'error': 'device_id required'}, 
+        mac_address = request.data.get('mac_address')
+        if not mac_address:
+            return Response({'error': 'mac_address مطلوب'}, 
                           status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            device = Device.objects.get(device_id=device_id)
+            device = Device.objects.get(mac_address=mac_address)
             device.last_seen = timezone.now()
             device.is_online = True
             device.save()
-            return Response({'status': 'checked_in', 'device_id': device_id})
+            return Response({'status': 'checked_in', 'mac_address': mac_address})
         except Device.DoesNotExist:
-            return Response({'error': 'Device not found'}, 
+            return Response({'error': 'الجهاز غير موجود'}, 
                           status=status.HTTP_404_NOT_FOUND)
 
 
@@ -51,13 +56,20 @@ class DeviceListView(APIView):
     
     def get(self, request):
         user_id = request.query_params.get('user_id')
+        show_all = request.query_params.get('show_all', 'false')
+        
         if user_id:
             devices = Device.objects.filter(user_id=user_id)
         else:
             devices = Device.objects.all()
         
+        # النحّال يرى MASTER فقط، الأدمن يرى الكل
+        if show_all != 'true':
+            devices = devices.filter(device_type='MASTER')
+        
         data = list(devices.values(
-            'device_id', 'device_type', 'name', 'user_id', 'parent_id',
-            'firmware_version', 'last_seen', 'is_online', 'registered_at'
+            'id', 'name', 'mac_address', 'device_type', 'notes',
+            'user_id', 'parent_id', 'firmware_version',
+            'last_seen', 'is_online', 'registered_at'
         ))
         return Response(data)

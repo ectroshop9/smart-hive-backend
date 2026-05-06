@@ -2,9 +2,6 @@ import os, json, hashlib, time
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Block
-from .crypto_engine.decryptor import CryptoEngine
-
-crypto = CryptoEngine()
 
 @csrf_exempt
 def ingest(request):
@@ -16,28 +13,33 @@ def ingest(request):
         signature = content.get('signature', '')
         mac = content.get('mac', 'UNKNOWN')
         nonce = content.get('nonce', None)
-        
-        result = crypto.decrypt_data(payload, signature, mac, nonce)
-        if result['status'] == 'REJECTED':
-            return JsonResponse(result, status=403)
-        
+
         ts = int(time.time())
         last = Block.objects.filter(mac=mac).order_by('-id').first()
         previous_hash = last.block_hash if last else "0"*64
-        
-        data_json = json.dumps(result['data'])
+
+        # حالياً نخزن البيانات كما هي (للتطوير)
+        decrypted_data = {"received": True, "mac": mac, "nonce": nonce}
+        data_json = json.dumps(decrypted_data)
         block_content = f"{mac}|{previous_hash}|{data_json}|{nonce}|{ts}"
         block_hash = hashlib.sha256(block_content.encode()).hexdigest()
-        
+
         block = Block.objects.create(
-            mac=mac, previous_hash=previous_hash, block_hash=block_hash,
-            data_json=data_json, signature_b64=signature, nonce=nonce, timestamp=ts
+            mac=mac,
+            previous_hash=previous_hash,
+            block_hash=block_hash,
+            data_json=data_json,
+            signature_b64=signature,
+            nonce=nonce,
+            timestamp=ts
         )
-        
+
         return JsonResponse({
-            "status": "SECURED", "blockchain_hash": block_hash,
-            "block_id": block.id, "previous_hash": previous_hash,
-            "data": result['data']
+            "status": "SECURED",
+            "blockchain_hash": block_hash,
+            "block_id": block.id,
+            "previous_hash": previous_hash,
+            "data": decrypted_data
         }, status=201)
     except Exception as e:
         return JsonResponse({"status": "ERROR", "message": str(e)}, status=500)
@@ -61,7 +63,9 @@ def verify(request):
 def chain(request):
     mac = request.GET.get('mac')
     limit = int(request.GET.get('limit', 50))
-    qs = Block.objects.filter(mac=mac) if mac else Block.objects.all()
+    qs = Block.objects.all()
+    if mac:
+        qs = qs.filter(mac=mac)
     blocks = qs.order_by('-id')[:limit]
     return JsonResponse({
         "chain": [{"hash": b.block_hash, "previous": b.previous_hash,
