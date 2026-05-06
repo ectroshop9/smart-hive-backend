@@ -16,9 +16,9 @@ class RegisterDeviceAPIView(APIView):
         if user_id:
             try:
                 beekeeper = Beekeeper.objects.get(user_id=user_id, is_active=True)
+                data['user'] = beekeeper.id  # ← أضف هذا: تحويل user_id إلى id الفعلي
             except Beekeeper.DoesNotExist:
-                return Response({'error': 'رقم النحّال غير صحيح'}, 
-                              status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'رقم النحّال غير صحيح'}, status=status.HTTP_400_BAD_REQUEST)
         
         serializer = DeviceSerializer(data=data)
         if serializer.is_valid():
@@ -31,7 +31,6 @@ class RegisterDeviceAPIView(APIView):
                 'device_type': device.device_type,
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class CheckinAPIView(APIView):
     def post(self, request):
