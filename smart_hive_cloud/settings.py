@@ -61,8 +61,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'smart_hive_cloud.wsgi.application'
 
-# ==================== قاعدة البيانات ====================
-# استخدام PostgreSQL إذا كان DATABASE_URL موجوداً، وإلا SQLite
+import dj_database_url
+
 if os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
@@ -74,7 +74,6 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-
 # ==================== التحقق من كلمة المرور ====================
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -113,6 +112,10 @@ LOGOUT_REDIRECT_URL = '/login/'
 CSRF_TRUSTED_ORIGINS = [
     'https://smart-hive-backend.onrender.com',
     'https://*.onrender.com',
+    'https://localhost:8001',
+    'http://localhost:8001',
+    'https://127.0.0.1:8001',
+    'http://127.0.0.1:8001',
 ]
 
 # ==================== مفتاح أساسي افتراضي ====================
