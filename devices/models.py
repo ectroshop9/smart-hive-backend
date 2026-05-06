@@ -28,3 +28,15 @@ class Device(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.mac_address})"
+class AuthorizedMAC(models.Model):
+    mac_address = models.CharField(max_length=17, unique=True, verbose_name="MAC Address")
+    is_registered = models.BooleanField(default=False, verbose_name="مسجل من نحّال")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاريخ الإضافة")
+
+    class Meta:
+        db_table = 'authorized_macs'
+        verbose_name = 'جهاز مرخص'
+        verbose_name_plural = 'الأجهزة المرخصة'
+
+    def __str__(self):
+        return f"{self.mac_address} - {'مسجل' if self.is_registered else 'متاح'}"

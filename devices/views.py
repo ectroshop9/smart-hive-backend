@@ -76,3 +76,44 @@ class DeviceListView(APIView):
             'last_seen', 'is_online', 'registered_at'
         ))
         return Response(data)
+@method_decorator(csrf_exempt, name='dispatch')
+class RegisterDeviceAPIView(APIView):
+    def post(self, request):
+        data = request.data.copy()
+        
+        mac_address = data.get('mac_address')
+        
+        # تحقق من وجود MAC في القائمة المرخصة
+        try:
+            authorized = AuthorizedMAC.objects.get(mac_address=mac_address)
+            if authorized.is_registered:
+                return Response({'error': 'هذا الجهاز مسجل بالفعل لدى نحّال آخر'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+        except AuthorizedMAC.DoesNotExist:
+            return Response({'error': 'هذا الجهاز غير مرخص. يرجى الاتصال بـ Electro Shop.'}, 
+                          status=status.HTTP_403_FORBIDDEN)
+        
+        user_id = data.get('user')
+        if user_id:
+            try:
+                beekeeper = Beekeeper.objects.get(user_id=user_id, is_active=True)
+                data['user'] = beekeeper.user_id
+            except Beekeeper.DoesNotExist:
+                return Response({'error': 'رقم النحّال غير صحيح'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = DeviceSerializer(data=data)
+        if serializer.is_valid():
+            device = serializer.save(last_seen=timezone.now())
+            
+            # تعليم MAC كمسجل
+            authorized.is_registered = True
+            authorized.save()
+            
+            return Response({
+                'status': 'registered',
+                'id': device.id,
+                'name': device.name,
+                'mac_address': device.mac_address,
+                'device_type': device.device_type,
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
