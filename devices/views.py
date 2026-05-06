@@ -1,3 +1,5 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,6 +10,7 @@ from django.utils import timezone
 from rest_framework.renderers import JSONRenderer
 from rest_framework_csv.renderers import CSVRenderer
 
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterDeviceAPIView(APIView):
     def post(self, request):
         data = request.data.copy()
@@ -16,7 +19,7 @@ class RegisterDeviceAPIView(APIView):
         if user_id:
             try:
                 beekeeper = Beekeeper.objects.get(user_id=user_id, is_active=True)
-                data['user'] = beekeeper.id  # ← أضف هذا: تحويل user_id إلى id الفعلي
+                data['user'] = beekeeper.user_id
             except Beekeeper.DoesNotExist:
                 return Response({'error': 'رقم النحّال غير صحيح'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -32,6 +35,8 @@ class RegisterDeviceAPIView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class CheckinAPIView(APIView):
     def post(self, request):
         mac_address = request.data.get('mac_address')
@@ -62,7 +67,6 @@ class DeviceListView(APIView):
         else:
             devices = Device.objects.all()
         
-        # النحّال يرى MASTER فقط، الأدمن يرى الكل
         if show_all != 'true':
             devices = devices.filter(device_type='MASTER')
         
