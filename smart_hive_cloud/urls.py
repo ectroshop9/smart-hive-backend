@@ -5,13 +5,12 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/devices/', include('devices.urls')),   # ← فوق
     path('api/readings/', include('readings.urls')),
-    path('api/devices/', include('devices.urls')),
     path('api/firmware/', include('firmware.urls')),
-    path('', include('accounts.urls')),  # هذا يضم كل مسارات accounts
     path('api/store/', include('store.urls')),
     path('vault/', include('vault.urls')),
-
+    path('', include('accounts.urls')),  # ← تحت
 ]
 
 if settings.DEBUG:
